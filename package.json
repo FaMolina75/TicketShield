@@ -34,7 +34,7 @@
         "react-flatpickr": "^3.10.13",
         "react-hot-toast": "^2.4.1",
         "react-responsive-masonry": "^2.1.7",
-        "react-trix": "^0.10.2",
+        "react-trix": "^0.0.1",
         "swiper": "^10.1.0"
     }
 }
