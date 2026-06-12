@@ -23,7 +23,7 @@ class SpeakerFactory extends Factory
             'slug' => Str::slug($name . "-" . uniqid()),
             'position' => $this->faker->jobTitle(),
             'email' => $this->faker->email(),
-            'img' => '/storage/img/speakers/img-' . rand(1, 10) . '.jpg',
+            'img' => '/img/speakers/img-' . rand(1, 10) . '.jpg',
             'website' => $this->faker->domainName(),
             'description' => $this->faker->text(400),
             'twitter' => $this->faker->domainName(),
