@@ -5,7 +5,7 @@ import InputFileLabelError from '@/Components/Form/InputFileLabelError';
 import InputLabelError from '@/Components/Form/InputLabelError';
 import SelectActive from '@/Components/Form/SelectActive';
 import SelectLabelError from '@/Components/Form/SelectLabelError';
-import TextareaTrix from '@/Components/Form/TextareaTrix';
+// import TextareaTrix from '@/Components/Form/TextareaTrix';
 import Input from '@/Components/Input';
 import InputError from '@/Components/InputError';
 import Label from '@/Components/Label';
@@ -110,12 +110,12 @@ const EventsCreate = ({ categories, locations, event = {}, edit }) => {
                                 <div className="sm:col-span-full">
                                     <Label forInput="description" value="Descripcikon larga" />
                                     <div className="mt-1">
-                                        <TextareaTrix
+                                        {/* <TextareaTrix
                                             className="mt-1"
                                             id="trixEditor"
                                             value={data.description}
                                             handleChange={(html, text) => (setData('description', html))}
-                                        />
+                                        /> */}
                                     </div>
                                     <InputError message={errors.description} className="mt-2" />
                                 </div>

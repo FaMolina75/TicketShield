@@ -6,7 +6,7 @@ import React from "react";
 
 const EventSidebar = ({ sessions, location, ticket_types }) => {
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             <CardSideBar title="Fechas y horas" Icon={ClockIcon}>
                 <div>
                     {sessions.map((item, key) => (
@@ -34,7 +34,7 @@ const EventSidebar = ({ sessions, location, ticket_types }) => {
             </CardSideBar>
 
             <CardSideBar title="Ubicacion" Icon={MapPinIcon}>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     <ListDescription title="Nombre del lugar">
                         {location.name}
                     </ListDescription>
@@ -66,17 +66,17 @@ const EventSidebar = ({ sessions, location, ticket_types }) => {
 };
 const CardSideBar = ({ title, Icon, children }) => {
     return (
-        <div className="flex grow flex-col px-5 pt-4 pb-5 overflow-hidden rounded-lg bg-white border ">
+        <div className="flex grow flex-col px-5 pt-4 pb-5 overflow-hidden rounded-md    | bg-white border ">
             <div className="overflow-hidden pb-2 grow">
                 <div className="flex items-center">
-                    {Icon && <Icon className="h-5 w-5 mr-2" />}
-                    <h5 className="text-base font-medium leading-6 line-clamp-none lg:line-clamp-2 ">
+                    {Icon && <Icon className="h-5 w-5 mr-1.5" />}
+                    <h5 className="text-sm font-medium leading-6 line-clamp-none lg:line-clamp-2 ">
                         {title}
                     </h5>
                 </div>
             </div>
 
-            <div className="border-t border-dashed border-slate-300 pt-3 text-sm  text-gray-700 ">
+            <div className="border-t border-dashed border-slate-300 pt-3 text-sm  text-gray-600 ">
                 {children}
             </div>
         </div>
