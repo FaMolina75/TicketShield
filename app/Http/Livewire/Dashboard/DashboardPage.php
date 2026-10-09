@@ -1,3 +1,4 @@
+Comment: This code defines a Livewire component for the dashboard page of a user. It retrieves the user's orders and events, calculates total revenue, tickets sold, and average order value, and passes this data to the view for rendering.
 <?php
 
 namespace App\Http\Livewire\Dashboard;
@@ -39,3 +40,4 @@ class DashboardPage extends Component
         ]);
     }
 }
+
