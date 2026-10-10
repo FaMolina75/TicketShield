@@ -18,7 +18,13 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(RouteServiceProvider::HOME);
+    $response->assertRedirect(route('home'));
+
+    $this->assertDatabaseHas('auth_audit_logs', [
+        'user_id' => $user->id,
+        'email' => $user->email,
+        'event' => 'account_logged_in',
+    ], 'auth_logs');
 });
 
 test('users can not authenticate with invalid password', function () {

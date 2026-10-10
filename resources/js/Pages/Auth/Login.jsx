@@ -9,8 +9,8 @@ import InputError from "@/Components/InputError";
 
 export default function Login({ status, canResetPassword }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        email: "user2@user.com",
-        password: "password",
+        email: "",
+        password: "",
         remember: true,
     });
 

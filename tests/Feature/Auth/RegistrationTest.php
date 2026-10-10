@@ -1,7 +1,5 @@
 <?php
 
-use App\Providers\RouteServiceProvider;
-
 test('registration screen can be rendered', function () {
     $response = $this->get('/register');
 
@@ -9,13 +7,24 @@ test('registration screen can be rendered', function () {
 });
 
 test('new users can register', function () {
+    $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+    $email = 'test-' . uniqid() . '@example.com';
+
     $response = $this->post('/register', [
         'name' => 'Test User',
-        'email' => 'test@example.com',
+        'email' => $email,
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
 
+    $response->assertRedirect(route('home'));
     $this->assertAuthenticated();
-    $response->assertRedirect(RouteServiceProvider::HOME);
+
+    expect(auth()->user()->hasRole('user'))->toBeTrue();
+
+    $this->assertDatabaseHas('auth_audit_logs', [
+        'user_id' => auth()->id(),
+        'email' => $email,
+        'event' => 'account_created',
+    ], 'auth_logs');
 });

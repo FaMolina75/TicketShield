@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuthAuditLog;
 use App\Models\User;
-use App\Providers\RouteServiceProvider;
+use Spatie\Permission\Models\Role;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,10 +47,21 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        Role::findOrCreate('user', 'web');
+        $user->assignRole('user');
+
+        AuthAuditLog::create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'event' => 'account_created',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect()->route('home');
     }
 }

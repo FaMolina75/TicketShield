@@ -8,6 +8,7 @@ RUN apt-get update \
         libjpeg62-turbo-dev \
         libonig-dev \
         libpng-dev \
+        libsqlite3-dev \
         libxml2-dev \
         libzip-dev \
         unzip \
@@ -22,6 +23,7 @@ RUN apt-get update \
         mbstring \
         pcntl \
         pdo_mysql \
+        pdo_sqlite \
         xml \
         xmlwriter \
         zip \

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\AuthAuditLog;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,9 +36,18 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+        AuthAuditLog::create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'event' => 'account_logged_in',
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
         $request->session()->regenerate();
 
-        if (Auth::user()->hasRole('super-admin')) {
+        if ($user->hasRole('super-admin')) {
             return Inertia::location(RouteServiceProvider::HOME);
         } else {
             return to_route('home');
