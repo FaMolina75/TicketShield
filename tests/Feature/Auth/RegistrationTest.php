@@ -20,7 +20,7 @@ test('new users can register', function () {
     $response->assertRedirect(route('home'));
     $this->assertAuthenticated();
 
-    expect(auth()->user()->hasRole('user'))->toBeTrue();
+    expect(\App\Models\User::findOrFail(auth()->id())->hasRole('user'))->toBeTrue();
 
     $this->assertDatabaseHas('auth_audit_logs', [
         'user_id' => auth()->id(),

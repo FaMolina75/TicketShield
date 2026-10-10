@@ -10,15 +10,17 @@ class DashboardPage extends Component
 {
     public function render()
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
 
         //ingresos totales
-        $orders = auth()->user()->orders()
+        $orders = $user->orders()
             ->with('order_tickets')
             ->orderBy('id', 'desc')
             //->whereMonth('created_at', now()->month)
             ->get();
 
-        $events = auth()->user()->events()->whereHas('sessions_available')->with('session', 'session.ticket_types.order_tickets')
+        $events = $user->events()->whereHas('sessions_available')->with('session', 'session.ticket_types.order_tickets')
             ->select('id', 'title', 'thum', 'slug')->get();
         $eventsCount = $events->count();
         //$events = $events->take(6);
