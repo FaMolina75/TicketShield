@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Button from "@/Components/Button";
 import Checkbox from "@/default-Components/Checkbox";
 import Guest from "@/Layouts/Guest";
@@ -7,18 +7,91 @@ import Label from "@/Components/Label";
 import { Head, Link, useForm } from "@inertiajs/react";
 import InputError from "@/Components/InputError";
 
-export default function Login({ status, canResetPassword }) {
+export default function Login({ status, canResetPassword, recaptchaSiteKey }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: "",
         password: "",
         remember: true,
+        "g-recaptcha-response": "",
     });
+    const captchaContainer = useRef(null);
+    const captchaWidgetId = useRef(null);
+    const [captchaError, setCaptchaError] = useState("");
 
     useEffect(() => {
         return () => {
             reset("password");
         };
     }, []);
+
+    useEffect(() => {
+        if (!recaptchaSiteKey) {
+            return;
+        }
+
+        let cancelled = false;
+        const renderCaptcha = () => {
+            if (
+                !cancelled &&
+                captchaContainer.current &&
+                window.grecaptcha &&
+                captchaWidgetId.current === null
+            ) {
+                captchaWidgetId.current = window.grecaptcha.render(
+                    captchaContainer.current,
+                    {
+                        sitekey: recaptchaSiteKey,
+                        callback: (token) => {
+                            setCaptchaError("");
+                            setData("g-recaptcha-response", token);
+                        },
+                        "expired-callback": () => {
+                            setData("g-recaptcha-response", "");
+                        },
+                        "error-callback": () => {
+                            setData("g-recaptcha-response", "");
+                            setCaptchaError(
+                                "No se pudo verificar reCAPTCHA. Revisa tu conexión e inténtalo de nuevo."
+                            );
+                        },
+                    }
+                );
+            }
+        };
+
+        const scriptId = "google-recaptcha-script";
+        let script = document.getElementById(scriptId);
+        const handleScriptLoad = () =>
+            window.grecaptcha.ready(renderCaptcha);
+        const handleScriptError = () =>
+            setCaptchaError(
+                "No se pudo cargar reCAPTCHA. Revisa tu conexión e inténtalo de nuevo."
+            );
+
+        if (!script) {
+            script = document.createElement("script");
+            script.id = scriptId;
+            script.src =
+                "https://www.google.com/recaptcha/api.js?render=explicit";
+            script.async = true;
+            script.defer = true;
+            script.addEventListener("load", handleScriptLoad);
+            script.addEventListener("error", handleScriptError);
+            document.head.appendChild(script);
+        } else if (window.grecaptcha) {
+            handleScriptLoad();
+        } else {
+            script.addEventListener("load", handleScriptLoad);
+            script.addEventListener("error", handleScriptError);
+        }
+
+        return () => {
+            cancelled = true;
+            script.removeEventListener("load", handleScriptLoad);
+            script.removeEventListener("error", handleScriptError);
+            captchaWidgetId.current = null;
+        };
+    }, [recaptchaSiteKey, setData]);
 
     const onHandleChange = (event) => {
         setData(
@@ -31,7 +104,15 @@ export default function Login({ status, canResetPassword }) {
 
     const submit = (e) => {
         e.preventDefault();
-        post(route("login"));
+        post(route("login"), {
+            onError: () => {
+                setCaptchaError("");
+                setData("g-recaptcha-response", "");
+                if (captchaWidgetId.current !== null && window.grecaptcha) {
+                    window.grecaptcha.reset(captchaWidgetId.current);
+                }
+            },
+        });
     };
     //Iniciar sesión
     return (
@@ -114,8 +195,37 @@ export default function Login({ status, canResetPassword }) {
                     </div>
                 </div>
 
-                <div className="mt-8 flex items-center justify-end">
-                    <Button className="ml-4" processing={processing}>
+                <div className="mt-6">
+                    {recaptchaSiteKey ? (
+                        <>
+                            <div ref={captchaContainer} />
+                            <InputError
+                                message={errors["g-recaptcha-response"]}
+                                className="mt-2"
+                            />
+                            {captchaError && (
+                                <p className="mt-2 text-sm text-red-600">
+                                    {captchaError}
+                                </p>
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-sm text-red-600">
+                            reCAPTCHA no está configurado. Contacta al
+                            administrador del sitio.
+                        </p>
+                    )}
+                </div>
+
+                <div className="mt-6 flex items-center justify-end">
+                    <Button
+                        className="ml-4"
+                        processing={processing}
+                        disabled={
+                            !recaptchaSiteKey ||
+                            !data["g-recaptcha-response"]
+                        }
+                    >
                         Iniciar sesión
                     </Button>
                 </div>

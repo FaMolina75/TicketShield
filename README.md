@@ -26,6 +26,8 @@ Open the application at <http://localhost:8000>. Vite serves development assets 
 
 The default local database is `ticket`, with username `ticket` and password `ticket`. The MySQL root password defaults to `root`. These credentials are for local development only. Compose reads optional overrides from the root `.env`; `.env.example` contains the complete Laravel environment template and is copied automatically on first startup.
 
+Login uses the Google reCAPTCHA v2 checkbox. Configure `GOOGLE_RECAPTCHA_SITE_KEY` and `GOOGLE_RECAPTCHA_SECRET_KEY` in `.env` with keys for your domain before logging in.
+
 Source files are bind-mounted into the app and Vite containers, so code changes are available immediately. Composer packages, npm packages, and MySQL data use named Docker volumes and survive container restarts and `docker compose down`.
 
 ## Common Commands
