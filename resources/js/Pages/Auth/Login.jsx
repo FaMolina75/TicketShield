@@ -16,6 +16,8 @@ export default function Login({ status, canResetPassword, recaptchaSiteKey }) {
     });
     const captchaContainer = useRef(null);
     const captchaWidgetId = useRef(null);
+    const setDataRef = useRef(setData);
+    setDataRef.current = setData;
     const [captchaError, setCaptchaError] = useState("");
 
     useEffect(() => {
@@ -43,13 +45,13 @@ export default function Login({ status, canResetPassword, recaptchaSiteKey }) {
                         sitekey: recaptchaSiteKey,
                         callback: (token) => {
                             setCaptchaError("");
-                            setData("g-recaptcha-response", token);
+                            setDataRef.current("g-recaptcha-response", token);
                         },
                         "expired-callback": () => {
-                            setData("g-recaptcha-response", "");
+                            setDataRef.current("g-recaptcha-response", "");
                         },
                         "error-callback": () => {
-                            setData("g-recaptcha-response", "");
+                            setDataRef.current("g-recaptcha-response", "");
                             setCaptchaError(
                                 "No se pudo verificar reCAPTCHA. Revisa tu conexión e inténtalo de nuevo."
                             );
@@ -89,9 +91,8 @@ export default function Login({ status, canResetPassword, recaptchaSiteKey }) {
             cancelled = true;
             script.removeEventListener("load", handleScriptLoad);
             script.removeEventListener("error", handleScriptError);
-            captchaWidgetId.current = null;
         };
-    }, [recaptchaSiteKey, setData]);
+    }, [recaptchaSiteKey]);
 
     const onHandleChange = (event) => {
         setData(
