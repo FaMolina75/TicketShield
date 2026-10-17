@@ -43,13 +43,6 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
-        'auth_logs' => [
-            'driver' => 'sqlite',
-            'database' => env('AUTH_LOG_DATABASE', storage_path('app/auth_logs.sqlite')),
-            'prefix' => '',
-            'foreign_key_constraints' => true,
-        ],
-
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),

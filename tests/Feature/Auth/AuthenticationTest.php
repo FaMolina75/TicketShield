@@ -32,7 +32,7 @@ test('users can authenticate using the login screen', function () {
         'user_id' => $user->id,
         'email' => $user->email,
         'event' => 'account_logged_in',
-    ], 'auth_logs');
+    ]);
 
     Http::assertSent(function ($request) {
         return $request->url() === 'https://www.google.com/recaptcha/api/siteverify'

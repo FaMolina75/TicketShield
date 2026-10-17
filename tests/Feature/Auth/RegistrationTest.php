@@ -26,5 +26,5 @@ test('new users can register', function () {
         'user_id' => auth()->id(),
         'email' => $email,
         'event' => 'account_created',
-    ], 'auth_logs');
+    ]);
 });
