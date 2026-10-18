@@ -8,14 +8,17 @@ use Illuminate\Http\Request;
 class TrustProxies extends Middleware
 {
     /**
-     * The trusted proxies for this application.
+     * Proxies de confianza.
+     *
+     * Render utiliza un proxy inverso para gestionar HTTPS.
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
-     * The headers that should be used to detect proxies.
+     * Encabezados utilizados para identificar
+     * el protocolo HTTPS original.
      *
      * @var int
      */
