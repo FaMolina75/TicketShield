@@ -7,49 +7,61 @@ use App\Models\AuthAuditLog;
 use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rules;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
-     *
-     * @return \Inertia\Response
+     * Mostrar el formulario de registro.
      */
     public function create()
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', [
+            'recaptchaSiteKey' => config('services.recaptcha.secret_key')
+                ? config('services.recaptcha.site_key')
+                : null,
+        ]);
     }
 
     /**
-     * Handle an incoming registration request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * Procesar el registro de un nuevo usuario.
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        // 1. Validar los datos del formulario y exigir CAPTCHA.
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => [
+                'required',
+                'confirmed',
+                Rules\Password::defaults(),
+            ],
+            'g-recaptcha-response' => ['required', 'string'],
         ]);
 
+        // 2. Verificar CAPTCHA en el servidor antes de crear la cuenta.
+        $this->verifyRecaptcha($request);
+
+        // 3. Crear el usuario únicamente después de validar CAPTCHA.
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
+        // 4. Asignar el rol de usuario.
         Role::findOrCreate('user', 'web');
         $user->assignRole('user');
 
+        // 5. Registrar el evento de creación de cuenta.
         AuthAuditLog::create([
             'user_id' => $user->id,
             'email' => $user->email,
@@ -58,10 +70,62 @@ class RegisteredUserController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        // 6. Ejecutar el evento de registro.
         event(new Registered($user));
 
+        // 7. Iniciar sesión con la cuenta recién creada.
         Auth::login($user);
 
+        // 8. Redirigir a la página principal.
         return redirect()->route('home');
+    }
+
+    /**
+     * Verificar el token de Google reCAPTCHA v2.
+     */
+    protected function verifyRecaptcha(Request $request): void
+    {
+        $secret = config('services.recaptcha.secret_key');
+
+        // Si falta la clave secreta, no permitir el registro.
+        if (!$secret) {
+            throw ValidationException::withMessages([
+                'g-recaptcha-response' =>
+                    'La verificación de seguridad no está configurada.',
+            ]);
+        }
+
+        try {
+            // Enviar el token a Google para verificar su autenticidad.
+            $response = Http::asForm()
+                ->timeout(5)
+                ->post(
+                    'https://www.google.com/recaptcha/api/siteverify',
+                    [
+                        'secret' => $secret,
+                        'response' => $request->input(
+                            'g-recaptcha-response'
+                        ),
+                        'remoteip' => $request->ip(),
+                    ]
+                );
+        } catch (ConnectionException $exception) {
+            // Si Google no responde, rechazar el registro.
+            throw ValidationException::withMessages([
+                'g-recaptcha-response' =>
+                    'No se pudo verificar reCAPTCHA. Inténtalo de nuevo.',
+            ]);
+        }
+
+        // Rechazar tokens inválidos o respuestas incorrectas.
+        if (
+            !$response->successful() ||
+            $response->json('success') !== true
+        ) {
+            throw ValidationException::withMessages([
+                'g-recaptcha-response' =>
+                    'Verificación reCAPTCHA inválida. Inténtalo de nuevo.',
+            ]);
+        }
     }
 }
