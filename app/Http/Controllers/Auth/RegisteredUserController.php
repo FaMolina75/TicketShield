@@ -62,16 +62,24 @@ class RegisteredUserController extends Controller
         $user->assignRole('user');
 
         // 5. Registrar el evento de creación de cuenta.
-        AuthAuditLog::create([
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'event' => 'account_created',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        try {
+            AuthAuditLog::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'event' => 'account_created',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
-        // 6. Ejecutar el evento de registro.
-        event(new Registered($user));
+        // 6. Ejecutar el evento de registro (protegido contra fallos de servidor SMTP).
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         // 7. Iniciar sesión con la cuenta recién creada.
         Auth::login($user);

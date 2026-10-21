@@ -9,11 +9,15 @@ if [ "$PORT" != "80" ]; then
     sed -ri "s/:[0-9]+>/:${PORT}>/" /etc/apache2/sites-available/*.conf
 fi
 
+# Asegurar permisos de almacenamiento y sesiones
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
+chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
+
 # Crear enlace simbólico de almacenamiento
 php artisan storage:link 2>/dev/null || true
 
 # Ejecutar migraciones de forma segura sin abortar el arranque de Apache si la BD tarda
-php artisan migrate --force 2>/dev/null || echo "Aviso: Migraciones no ejecutadas o base de datos no conectada aún."
+php artisan migrate --force || echo "Aviso: Migraciones no ejecutadas o base de datos no conectada aún."
 
 # Limpiar cachés para cargar las variables de entorno de Render
 php artisan view:clear 2>/dev/null || true

@@ -40,13 +40,17 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $user = Auth::user();
-        AuthAuditLog::create([
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'event' => 'account_logged_in',
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+        try {
+            AuthAuditLog::create([
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'event' => 'account_logged_in',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         $request->session()->regenerate();
 

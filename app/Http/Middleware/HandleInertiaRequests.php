@@ -40,7 +40,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
                     'phone' => $request->user()->phone,
-                    'role' => $request->user()->getRoleNames()->first(),
+                    'role' => $request->user()->roles->first()?->name ?? null,
                 ] : null,
             ],
             'ziggy' => function () use ($request) {
@@ -48,7 +48,14 @@ class HandleInertiaRequests extends Middleware
                     'location' => $request->url(),
                 ]);
             },
-            'categories' => fn () => CategoryResource::collection(Category::whereNull('category_id')->get()),
+            'categories' => function () {
+                try {
+                    return CategoryResource::collection(Category::whereNull('category_id')->get());
+                } catch (\Throwable $e) {
+                    report($e);
+                    return [];
+                }
+            },
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
             ],
