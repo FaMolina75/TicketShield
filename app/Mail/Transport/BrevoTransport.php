@@ -3,12 +3,10 @@
 namespace App\Mail\Transport;
 
 use Illuminate\Support\Facades\Http;
-use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\Mime\RawMessage;
 
 class BrevoTransport extends AbstractTransport
 {
@@ -17,13 +15,17 @@ class BrevoTransport extends AbstractTransport
         $email = $message->getOriginalMessage();
 
         if (! $email instanceof Email) {
-            throw new \RuntimeException('Brevo requiere un mensaje de correo válido.');
+            throw new \RuntimeException(
+                'Brevo requiere un mensaje de correo válido.'
+            );
         }
 
         $sender = $email->getFrom()[0] ?? null;
 
         if (! $sender instanceof Address) {
-            throw new \RuntimeException('El correo no tiene remitente.');
+            throw new \RuntimeException(
+                'El correo no tiene remitente.'
+            );
         }
 
         $recipients = array_map(
@@ -51,16 +53,29 @@ class BrevoTransport extends AbstractTransport
             $payload['textContent'] = $email->getTextBody();
         }
 
+        $apiKey = config('services.brevo.key');
+
+        if (! is_string($apiKey) || $apiKey === '') {
+            throw new \RuntimeException(
+                'BREVO_API_KEY no está configurada.'
+            );
+        }
+
         $response = Http::withHeaders([
-            'api-key' => config('services.brevo.key'),
+            'api-key' => $apiKey,
             'accept' => 'application/json',
         ])
             ->timeout(15)
             ->post('https://api.brevo.com/v3/smtp/email', $payload);
 
         if (! $response->successful()) {
+            $errorCode = $response->json('code');
+
             throw new \RuntimeException(
                 'Brevo API error: HTTP ' . $response->status()
+                . ' | Code: ' . (
+                    is_string($errorCode) ? $errorCode : 'unknown'
+                )
             );
         }
     }
