@@ -70,11 +70,15 @@ class BrevoTransport extends AbstractTransport
 
         if (! $response->successful()) {
             $errorCode = $response->json('code');
+            $errorMessage = $response->json('message');
 
             throw new \RuntimeException(
                 'Brevo API error: HTTP ' . $response->status()
                 . ' | Code: ' . (
                     is_string($errorCode) ? $errorCode : 'unknown'
+                )
+                . ' | Message: ' . (
+                    is_string($errorMessage) ? $errorMessage : 'unknown'
                 )
             );
         }
