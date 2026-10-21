@@ -53,8 +53,11 @@ RUN apt-get update && apt-get install -y \
 # Instalar Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Configurar Apache
-RUN a2enmod rewrite headers
+# Configurar Apache y hardening
+RUN a2enmod rewrite headers \
+    && echo "ServerTokens Prod" >> /etc/apache2/apache2.conf \
+    && echo "ServerSignature Off" >> /etc/apache2/apache2.conf \
+    && echo "expose_php = Off" > /usr/local/etc/php/conf.d/security.ini
 
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 

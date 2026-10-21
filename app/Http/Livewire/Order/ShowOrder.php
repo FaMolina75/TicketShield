@@ -35,8 +35,8 @@ class ShowOrder extends Component
         $this->order = $order;
 
         $this->dispatchBrowserEvent('notification', [
-            'title' => 'pago Cancelada',
-            'subtitle' => 'El Pago  <b>' . $this->order->code . '</b>  a sido  ' . $this->order->status->text(),
+            'title' => 'Pago Cancelado',
+            'subtitle' => 'El pago ' . $this->order->code . ' ha sido ' . $this->order->status->text(),
         ]);
         $this->emit('resetListOrder');
         $this->open_modal_confirmation = false;

@@ -20,7 +20,6 @@ class ContactUsController extends Controller
 
     public function save()
     {
-        sleep(2);
-        return to_route('home')->with(['success' => '¡Consulta recibida! Te responderemos lo antes posible.']);;
+        return to_route('home')->with(['success' => '¡Consulta recibida! Te responderemos lo antes posible.']);
     }
 }

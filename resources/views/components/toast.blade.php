@@ -21,8 +21,7 @@
                     </div>
                     <div class="pt-0.5 ml-3 grow text-sm">
                         <div class="font-medium text-gray-900 " x-text="title"></div>
-                        <div x-show="subtitle" class="text-gray-500 font-normal mt-1" x-html="subtitle"
-                            x-show="subtitle">
+                        <div x-show="subtitle" class="text-gray-500 font-normal mt-1" x-text="subtitle">
                         </div>
 
                     </div>

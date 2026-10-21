@@ -45,7 +45,8 @@ class ManagerSessionController extends Controller
      */
     public function create($event_id)
     {
-        $ticket_types = TicketType::select('id', 'name', 'type', 'price', 'quantity', 'updated_at')->active()->where('event_id', $event_id)->get();
+        $event = auth()->user()->events()->findOrFail($event_id);
+        $ticket_types = TicketType::select('id', 'name', 'type', 'price', 'quantity', 'updated_at')->active()->where('event_id', $event->id)->get();
         return Inertia::render('Manager/Session/SessionCreate', [
             'session' => new Session(Session::factory()->make()->toArray()),
             'ticketTypes' => TicketTypeResource::collection($ticket_types),
@@ -60,15 +61,15 @@ class ManagerSessionController extends Controller
      */
     public function store(SessionRequest $request, $event_id)
     {
-
+        $event = auth()->user()->events()->findOrFail($event_id);
         $validated = $request->validated();
         $session = new Session($validated);
-        $session->event_id = $event_id;
+        $session->event_id = $event->id;
         $session->user_id = auth()->user()->id;
         $session->save();
 
-        $ticket_type_selected = TicketType::whereHas('event', function ($query) use ($event_id) {
-            $query->where('id', $event_id);
+        $ticket_type_selected = TicketType::whereHas('event', function ($query) use ($event) {
+            $query->where('id', $event->id);
             $query->where('user_id', auth()->user()->id);
         })->whereIn('id', $request->ticket_type_selected)->pluck('id');
 

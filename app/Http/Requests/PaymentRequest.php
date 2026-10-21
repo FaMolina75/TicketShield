@@ -30,9 +30,10 @@ class PaymentRequest extends FormRequest
             })],
             'date' => ['date', 'required', 'after:now'],
             'tickets_quantity' => ['required', 'array', 'min:1'],
+            'tickets_quantity.*' => ['required', 'integer', 'min:1', 'max:10'],
             'name' => ['required', 'max:255', 'min:3'],
             'phone' => ['required', 'max:20', 'min:3'],
-            //'code_promotion' => ['nullable', 'exists:promotions,code'],
+            'code_promotion' => ['nullable', 'string', 'max:50'],
         ];
     }
 

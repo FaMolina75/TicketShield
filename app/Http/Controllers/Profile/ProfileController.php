@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Profile;
 
 use App\Enums\OrderStatus;
-use App\Helpers\Checkout;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Http\Resources\PaymentResource;
+use App\Services\OrderService;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -119,7 +119,7 @@ class ProfileController extends Controller
 			'password' => Hash::make($request->password),
 		])->save();
 
-		return Redirect::route('change_password')
+		return Redirect::route('profile.change_password')
 			->with(
 				'success',
 				'Datos Actualizados Correctamente'
@@ -130,23 +130,22 @@ class ProfileController extends Controller
 	{
 		$user = auth()->user();
 
-		$payment = $user->payments->where('code', $code)->firstOrFail();
+		$order = $user->orders()->where('code', $code)->firstOrFail();
 
-		if ($payment->status != OrderStatus::SUCCESSFUL) {
+		if ($order->status != OrderStatus::SUCCESSFUL) {
 			return Redirect::route('profile.my_orders')
 				->withErrors(
-					'Este boleto ya esta cancelado',
+					'Este boleto ya está cancelado',
 				);
 		}
 
-		[$days, $porcent_refund, $amount_refund,] = Checkout::calculate_amount_refund($payment);
+		[$days, $porcent_refund, $amount_refund] = OrderService::calculate_amount_refund($order);
 
 		return Inertia::render('Profile/CancelOrder', [
 			'amount_refund' => $amount_refund,
 			'days' => $days,
 			'porcent_refund' => $porcent_refund,
-			'payment' => new PaymentResource($payment),
-
+			'payment' => new PaymentResource($order),
 		]);
 	}
 
@@ -154,62 +153,36 @@ class ProfileController extends Controller
 	{
 		$user = auth()->user();
 
-		$payment = $user->payments->where('code', $request->code)->firstOrFail();
+		$order = $user->orders()->where('code', $request->code)->firstOrFail();
 
-		if ($payment->status != OrderStatus::SUCCESSFUL) {
+		if ($order->status != OrderStatus::SUCCESSFUL) {
 			return Redirect::route('profile.my_orders')
 				->withErrors(
-					'Este boleto ya esta cancelado',
+					'Este boleto ya está cancelado',
 				);
 		}
 
-		[$days, $porcent_refund, $amount_refund] = Checkout::calculate_amount_refund($payment);
+		[$days, $porcent_refund, $amount_refund] = OrderService::calculate_amount_refund($order);
 
 		if ($amount_refund > 0) {
-			Checkout::refund($payment, $amount_refund, $days, $porcent_refund);
-			$payment->status = OrderStatus::REFUNDED;
+			$order->status = OrderStatus::REFUNDED;
 		} else {
-			$payment->status = OrderStatus::CANCELED;
+			$order->status = OrderStatus::CANCELED;
 		}
 
-		$payment->cancel_data = [
+		$order->cancel_data = [
 			'porcent_refund' => $porcent_refund,
 			'days' => $days,
 			'amount_refund' => $amount_refund,
 		];
 
-		$payment->canceled_at = Carbon::now();
-		$payment->save();
-
-		// try {
-		//     DB::beginTransaction();
-		//     if ($amount_refund > 0) {
-		//         Checkout::refund($payment, $amount_refund, $days, $porcent_refund);
-		//         $payment->status = OrderStatus::REFUNDED;
-		//     } else {
-		//         $payment->status = OrderStatus::CANCELED;
-		//     }
-
-		//     $payment->cancel_data = [
-		//         'porcent_refund' => $porcent_refund,
-		//         'days' => $days,
-		//         'amount_refund' => $amount_refund
-		//     ];
-
-		//     $payment->canceled_at = Carbon::now();
-		//     $payment->save();
-
-		//     DB::commit();
-		// } catch (\Throwable $e) {
-
-		//     DB::rollBack();
-		//     return back()->withErrors(['message' => "Al parecer hubo un error! El reembolso no se pudo realizar"]);
-		// }
+		$order->canceled_at = Carbon::now();
+		$order->save();
 
 		return Redirect::route('profile.my_orders')
 			->with(
 				'success',
-				'Datos Actualizados Correctamente'
+				'Orden cancelada correctamente'
 			);
 	}
 }

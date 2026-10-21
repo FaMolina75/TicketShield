@@ -26,9 +26,9 @@ class OrderService
         public $promotion = null,
     ) {
     }
-    public static function generateCode($id): string
+    public static function generateCode($id = null): string
     {
-        return date('md') . str_pad(Mt_rand(1, 1000), 4, 0) . $id;
+        return Str::upper(Str::random(12));
     }
     public static function createOrder($event, $session_selected, $tickets_selected, $promotion = null)
     {
@@ -66,7 +66,7 @@ class OrderService
         }
         $order->event_id = $event->id;
         $order->session_id = $session_selected->id;
-        $order->user_id = $event->user_id;
+        $order->user_id = auth()->id();
         return $order;
     }
 
@@ -106,15 +106,17 @@ class OrderService
 
         if ($tickets_quantity) {
 
-            $tickets_quantity = array_filter($tickets_quantity);
+            $tickets_quantity = array_filter($tickets_quantity, function ($qty) {
+                return is_numeric($qty) && (int)$qty > 0;
+            });
 
             $ids_tickets_selected = array_keys($tickets_quantity);
 
             $tickets_selected = $tickets->whereIn('id', $ids_tickets_selected)
                 ->map(function ($item) use ($tickets_quantity) {
-
-                    $item->quantity_selected = $tickets_quantity[$item->id];
-                    $item->price_quantity = $tickets_quantity[$item->id] * $item->price;
+                    $qty = (int)$tickets_quantity[$item->id];
+                    $item->quantity_selected = $qty;
+                    $item->price_quantity = $qty * $item->price;
 
                     return $item;
                 })->values();

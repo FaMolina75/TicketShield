@@ -13,8 +13,12 @@ class TrustHosts extends Middleware
      */
     public function hosts(): array
     {
-        return [
+        return array_filter([
             $this->allSubdomainsOfApplicationUrl(),
-        ];
+            'localhost',
+            '127.0.0.1',
+            '*.onrender.com',
+            env('APP_DOMAIN'),
+        ]);
     }
 }

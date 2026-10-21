@@ -15,8 +15,8 @@
         class="bg-white rounded-lg px-4 py-3 inline-block shadow-sm fixed top-20 right-5 top border border-opacity-75  z-50">
         <div class="flex justify-between">
             <div>
-                <p class="font-medium text-sm text-green-500" x-html="title"></p>
-                <p class="text-sm text-gray-500" x-html="subtitle"></p>
+                <p class="font-medium text-sm text-green-500" x-text="title"></p>
+                <p class="text-sm text-gray-500" x-text="subtitle"></p>
             </div>
 
             <div class="pl-3">

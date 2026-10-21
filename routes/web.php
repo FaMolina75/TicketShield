@@ -62,7 +62,9 @@ Route::get('/speaker/{speaker}', [PageController::class, 'speaker'])->name('spea
 Route::get('/about-us', [PageController::class, 'about_us'])->name('about_us');
 
 Route::get('/contact-us', [ContactUsController::class, 'contact_us'])->name('contact_us');
-Route::post('/message-contact-us', [ContactUsController::class, 'save'])->name('contact_us.save');
+Route::post('/message-contact-us', [ContactUsController::class, 'save'])
+    ->middleware('throttle:5,1')
+    ->name('contact_us.save');
 
 Route::get('/privacy-policy', [PageController::class, 'privacy_policy'])->name('privacy_policy');
 
@@ -109,7 +111,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 });
 Route::get('/order-validate/{code}', function ($code) {
     return 'Aquí se valida el ticket a través de la aplicación ';
-})->name('order_validate');
+})->middleware('throttle:30,1')->name('order_validate');
 
 Route::middleware(['auth', 'role:super-admin'])->prefix('dashboard')->name('dashboard.')->group(function () {
 

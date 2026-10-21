@@ -17,6 +17,11 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
+        if (app()->environment('production') && !env('ALLOW_SEEDERS_IN_PRODUCTION', false)) {
+            $this->command->warn('UserSeeder: Ejecución de seeders bloqueada en entorno de producción por seguridad.');
+            return;
+        }
+
         User::truncate();
         Role::truncate();
         Permission::truncate();
@@ -25,11 +30,13 @@ class UserSeeder extends Seeder
         $role_user = Role::create(['name' => 'user']);
         Permission::create(['name' => 'dashboard'])->syncRoles([$role_user, $role_admin]);
 
+        $adminPassword = env('ADMIN_DEFAULT_PASSWORD', 'TicketShield@2026!AdminSec');
         $user_admin = User::factory()
             ->has(Location::factory()->count(5))
             ->create([
-                'email' => 'user@user.com',
-                'email_verified_at' => null,
+                'email' => env('ADMIN_DEFAULT_EMAIL', 'admin@ticketshield.local'),
+                'password' => \Illuminate\Support\Facades\Hash::make($adminPassword),
+                'email_verified_at' => now(),
                 'remember_token' => null,
             ]);
         $user_admin->assignRole($role_admin);

@@ -40,11 +40,12 @@ class ManagerTicketTypeController extends Controller
 	 */
 	public function create($event_id)
 	{
+		$event = $this->getEvent($event_id);
 		return Inertia::render('Manager/TicketType/TicketTypeCreate', [
 			'ticketType' => TicketType::factory()->make(),
 			'typePrice' => $this->getTypePrice(),
 			'edit' => false,
-			'eventId' => $event_id
+			'eventId' => $event->id
 		]);
 	}
 
@@ -53,7 +54,7 @@ class ManagerTicketTypeController extends Controller
 	 */
 	public function store(TicketTypeStoreRequest $request, $event_id)
 	{
-
+		$event = $this->getEvent($event_id);
 		$validated = $request->validated();
 		$ticket_type = new TicketType($validated);
 		if ($ticket_type->type == TicketTypesEnum::FREE) {
@@ -63,11 +64,11 @@ class ManagerTicketTypeController extends Controller
 		} else {
 			$ticket_type->calculatePrice();
 		}
-		$ticket_type->event_id = $event_id;
+		$ticket_type->event_id = $event->id;
 		$ticket_type->user_id = auth()->user()->id;
 		$ticket_type->save();
 
-		return  to_route('manager.events.ticket_types.index', $event_id)
+		return  to_route('manager.events.ticket_types.index', $event->id)
 			->with(['success' => 'Registro creado']);
 	}
 

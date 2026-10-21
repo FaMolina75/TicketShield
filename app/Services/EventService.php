@@ -11,6 +11,7 @@ use App\Models\Product;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EventService
 {
@@ -24,7 +25,12 @@ class EventService
             'entry' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
             'sub_category_id' => 'required|exists:App\Models\Category,id',
-            'location_id' => 'required|exists:App\Models\Location,id',
+            'location_id' => [
+                'required',
+                Rule::exists('locations', 'id')->where(function ($query) {
+                    return $query->where('user_id', auth()->id());
+                }),
+            ],
 
             'banner' => 'required|image|max:1024|mimes:jpeg,jpg,png',
             'card' => 'required|image|max:1024|mimes:jpeg,jpg,png',
