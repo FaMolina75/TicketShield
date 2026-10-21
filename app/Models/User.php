@@ -49,6 +49,15 @@ class User extends Authenticatable implements MustVerifyEmail
 
     ];
 
+    public function hasVerifiedEmail()
+    {
+        if (env('AUTO_VERIFY_EMAIL', false)) {
+            return true;
+        }
+
+        return ! is_null($this->email_verified_at);
+    }
+
     public function orders()
     {
         return  $this->hasMany(Order::class);

@@ -18,7 +18,7 @@ class SearchController extends Controller
             ->with('session', 'location');
 
         if ($request->search) {
-            $events->where('name', 'like', '%'.$request->search.'%');
+            $events->where('title', 'like', '%'.$request->search.'%');
         }
 
         if ($request->type && $request->type != 'all') {

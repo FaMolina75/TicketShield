@@ -36,6 +36,11 @@ class CheckoutController extends Controller
             $session_selected = $event->sessions_available->first();
         }
 
+        if (!$session_selected) {
+            return Redirect::route('event', ['slug' => $slug])
+                ->withErrors(['message' => 'No hay fechas o sesiones disponibles para este evento.']);
+        }
+
         $tickets = $session_selected->ticket_types_available;
 
         $tickets_selected = OrderService::calculatePriceTicket(
