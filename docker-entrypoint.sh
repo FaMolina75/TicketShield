@@ -9,7 +9,12 @@ if [ "$PORT" != "80" ]; then
     sed -ri "s/:[0-9]+>/:${PORT}>/" /etc/apache2/sites-available/*.conf
 fi
 
-# Asegurar permisos de almacenamiento y sesiones
+# Asegurar directorios y permisos de almacenamiento y sesiones
+mkdir -p /var/www/html/storage/framework/sessions \
+         /var/www/html/storage/framework/views \
+         /var/www/html/storage/framework/cache \
+         /var/www/html/storage/logs \
+         /var/www/html/bootstrap/cache 2>/dev/null || true
 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache 2>/dev/null || true
 
