@@ -49,6 +49,14 @@ Route::middleware('auth')->group(function () {
                 ->middleware('throttle:6,1')
                 ->name('verification.send');
 
+    Route::post('verify-email/instant', function (\Illuminate\Http\Request $request) {
+        if (!$request->user()->hasVerifiedEmail()) {
+            $request->user()->markEmailAsVerified();
+            event(new \Illuminate\Auth\Events\Verified($request->user()));
+        }
+        return redirect()->route('home')->with('success', '¡Cuenta verificada exitosamente!');
+    })->name('verification.instant');
+
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
                 ->name('password.confirm');
 
