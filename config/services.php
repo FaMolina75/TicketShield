@@ -7,10 +7,7 @@ return [
     | Third Party Services
     |--------------------------------------------------------------------------
     |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
+    | Configuración de servicios externos utilizados por TicketShield.
     |
     */
 
@@ -31,9 +28,29 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google reCAPTCHA
+    |--------------------------------------------------------------------------
+    */
+
     'recaptcha' => [
         'site_key' => env('GOOGLE_RECAPTCHA_SITE_KEY'),
         'secret_key' => env('GOOGLE_RECAPTCHA_SECRET_KEY'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Brevo - API de correo transaccional
+    |--------------------------------------------------------------------------
+    |
+    | La clave se obtiene de las variables de entorno.
+    | Nunca escribas la clave directamente en este archivo.
+    |
+    */
+
+    'brevo' => [
+        'key' => env('BREVO_API_KEY'),
     ],
 
 ];
