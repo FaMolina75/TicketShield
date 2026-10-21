@@ -78,15 +78,17 @@ RUN composer install \
     --no-interaction \
     --prefer-dist
 
-# Permisos de Laravel
+# Permisos de Laravel y script de arranque para Render / Railway
 RUN mkdir -p storage/framework/cache \
     storage/framework/sessions \
     storage/framework/views \
     storage/logs \
     bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && chmod +x docker-entrypoint.sh \
+    && cp docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
-EXPOSE 80
+EXPOSE 80 10000
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

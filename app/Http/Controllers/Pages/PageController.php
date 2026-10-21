@@ -55,4 +55,9 @@ class PageController extends Controller
         $speaker = Speaker::active()->where('slug', $slug)->firstOrFail();
         return Inertia::render('Speaker/Speaker', ['speaker' => $speaker]);
     }
+
+    public function order_validate($code)
+    {
+        return 'Aquí se valida el ticket a través de la aplicación';
+    }
 }

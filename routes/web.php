@@ -109,9 +109,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
             ->name('ticket_type.calculate_price');
     });
 });
-Route::get('/order-validate/{code}', function ($code) {
-    return 'Aquí se valida el ticket a través de la aplicación ';
-})->middleware('throttle:30,1')->name('order_validate');
+Route::get('/order-validate/{code}', [PageController::class, 'order_validate'])
+    ->middleware('throttle:30,1')
+    ->name('order_validate');
 
 Route::middleware(['auth', 'role:super-admin'])->prefix('dashboard')->name('dashboard.')->group(function () {
 
