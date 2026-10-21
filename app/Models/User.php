@@ -23,6 +23,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'phone',
         'password',
+        'email_verified_at',
     ];
 
     /**
@@ -51,7 +52,19 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function hasVerifiedEmail()
     {
-        if (env('AUTO_VERIFY_EMAIL', false)) {
+        $autoVerify = env('AUTO_VERIFY_EMAIL');
+        if ($autoVerify !== null) {
+            $isAuto = filter_var($autoVerify, FILTER_VALIDATE_BOOLEAN);
+        } else {
+            // Si el driver es log o no hay credenciales SMTP configuradas, auto-verificar
+            $isAuto = env('MAIL_MAILER', 'log') === 'log' || empty(env('MAIL_USERNAME'));
+        }
+
+        if ($isAuto) {
+            if (is_null($this->email_verified_at)) {
+                $this->email_verified_at = $this->freshTimestamp();
+                $this->saveQuietly();
+            }
             return true;
         }
 

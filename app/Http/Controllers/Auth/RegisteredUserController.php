@@ -51,10 +51,16 @@ class RegisteredUserController extends Controller
         $this->verifyRecaptcha($request);
 
         // 3. Crear el usuario únicamente después de validar CAPTCHA.
+        $autoVerify = env('AUTO_VERIFY_EMAIL');
+        $isAuto = $autoVerify !== null
+            ? filter_var($autoVerify, FILTER_VALIDATE_BOOLEAN)
+            : (env('MAIL_MAILER', 'log') === 'log' || empty(env('MAIL_USERNAME')));
+
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'email_verified_at' => $isAuto ? now() : null,
         ]);
 
         // 4. Asignar el rol de usuario.
